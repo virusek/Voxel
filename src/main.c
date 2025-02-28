@@ -1,3 +1,4 @@
+#include "util/types.h"
 #include "util/util.h"
 
 #include <glad/glad.h>
@@ -58,19 +59,34 @@ int main(void) {
 
   glViewport(0, 0, 1280, 720);
 
-  // Triangle Setup
+  // Quad Setup
 
   f32 vertices[] = {
-      -0.5f, -0.5f, 0.0f, 0.5f, -0.5f, 0.0f, 0.0f, 0.5f, 0.0f,
+      0.5f,  0.5f,  0.0f, // top right
+      0.5f,  -0.5f, 0.0f, // bottom right
+      -0.5f, -0.5f, 0.0f, // bottom left
+      -0.5f, 0.5f,  0.0f  // top left
   };
 
-  unsigned int VAO;
+  u32 indices[] = {
+      // note that we start from 0!
+      0, 1, 3, // first triangle
+      1, 2, 3  // second triangle
+  };
+
+  u32 VAO;
   glGenVertexArrays(1, &VAO);
 
   u32 vbo;
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+  u32 ibo;
+  glGenBuffers(1, &ibo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
+               GL_STATIC_DRAW);
 
   u32 vertexShader;
   vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -99,7 +115,7 @@ int main(void) {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     glfwPollEvents();
     glfwSwapBuffers(window);
