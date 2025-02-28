@@ -1,23 +1,22 @@
-UNAME_S = $(shell uname -s)
+CC := x86_64-w64-mingw32-gcc
 
-CC = clang
-CFLAGS = -std=c11 -O3 -g -Wall -Wextra -Wpedantic -Wstrict-aliasing
+SRC_DIR := src
+BUILD_DIR := bin
+OBJ_DIR := $(BUILD_DIR)/obj
+BIN = bin
+
+CFLAGS := -I/usr/x86_64-w64-mingw32/include -MMD -MP -Wall
 CFLAGS += -Wno-pointer-arith -Wno-newline-eof -Wno-unused-parameter -Wno-gnu-statement-expression
 CFLAGS += -Wno-gnu-compound-literal-initializer -Wno-gnu-zero-variadic-macro-arguments
-CFLAGS += -Ilib/cglm/include -Ilib/glad/include -Ilib/glfw/include -Ilib/stb -Ilib/noise -fbracket-depth=1024
-LDFLAGS = lib/glad/src/glad.o lib/cglm/libcglm.a lib/glfw/src/libglfw3.a lib/noise/libnoise.a -lm
 
-ifeq ($(UNAME_S), Darwin)
-	LDFLAGS += -framework OpenGL -framework IOKit -framework CoreVideo -framework Cocoa
-endif
+CFLAGS += -Ilib/cglm/include -Ilib/glad/include -Ilib/glfw/include
 
-ifeq ($(UNAME_S), Linux)
-	LDFLAGS += -ldl -lpthread
-endif
+LDFLAGS := lib/cglm/libcglm.a lib/glad/src/glad.o lib/glfw/src/libglfw3.a -lm
+LDFLAGS += -L/usr/x86_64-w64-mingw32/lib -lgdi32 -luser32
 
-SRC  = $(wildcard src/**/*.c) $(wildcard src/*.c) $(wildcard src/**/**/*.c) $(wildcard src/**/**/**/*.c)
-OBJ  = $(SRC:src/%.c=bin/obj/%.o)
-BIN = bin
+SRC  = $(wildcard $(SRC_DIR)/**/*.c) $(wildcard $(SRC_DIR)/*.c) $(wildcard $(SRC_DIR)/**/**/*.c) $(wildcard $(SRC_DIR)/**/**/**/*.c)
+OBJ  = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+
 TARGET = $(BIN)/game.exe
 
 .PHONY: all clean
@@ -25,13 +24,19 @@ TARGET = $(BIN)/game.exe
 all: dirs libs game
 
 libs:
+	echo "Building CGLM"
 	cd lib/cglm && cmake . -DCGLM_STATIC=ON && make
+	echo "Building GLAD"
 	cd lib/glad && $(CC) -o src/glad.o -Iinclude -c src/glad.c
-	cd lib/glfw && cmake . && make
+	echo "Building GLFW"
+	cd lib/glfw && cmake -S . -DCMAKE_TOOLCHAIN_FILE=CMake/x86_64-w64-mingw32.cmake -G "Ninja" && ninja
+	echo "Building NOISE"
 	cd lib/noise && make
+	echo "Finished building libraries"
 
 dirs:
-	mkdir -p ./$(BIN)/obj
+	mkdir -p ./$(BIN)
+	mkdir -p ./$(OBJ_DIR)
 
 run: all
 	$(TARGET)
@@ -39,7 +44,7 @@ run: all
 game: $(OBJ)
 	$(CC) -o $(TARGET) $^ $(LDFLAGS)
 
-bin/obj/%.o: src/%.c
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 clean:
