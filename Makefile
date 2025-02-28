@@ -16,7 +16,7 @@ ifeq ($(UNAME_S), Linux)
 endif
 
 SRC  = $(wildcard src/**/*.c) $(wildcard src/*.c) $(wildcard src/**/**/*.c) $(wildcard src/**/**/**/*.c)
-OBJ  = $(SRC:.c=.o)
+OBJ  = $(SRC:src/%.c=bin/obj/%.o)
 BIN = bin
 TARGET = $(BIN)/game.exe
 
@@ -31,7 +31,7 @@ libs:
 	cd lib/noise && make
 
 dirs:
-	mkdir -p ./$(BIN)
+	mkdir -p ./$(BIN)/obj
 
 run: all
 	$(TARGET)
@@ -39,7 +39,7 @@ run: all
 game: $(OBJ)
 	$(CC) -o $(TARGET) $^ $(LDFLAGS)
 
-%.o: %.c
+bin/obj/%.o: src/%.c
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 clean:
