@@ -1,30 +1,23 @@
+#include "glad/glad.h"
 #include "util/util.h"
 
+#include "gfx/shader.h"
+#include "gfx/texture.h"
 #include "gfx/window.h"
+
+#include "gfx/vao.h"
+#include "gfx/vbo.h"
 
 #include "state.h"
 
 struct State state;
 
-const char *vertexShaderSource =
-    "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    "}\0";
+struct VAO vao;
+struct VBO vbo, ibo;
 
-const char *fragmentShaderSource = "#version 330 core\n"
-                                   "out vec4 outColor;\n"
-                                   "void main()\n"
-                                   "{\n"
-                                   "   outColor = vec4(0.2, 0.5, 1, 1.0);\n"
-                                   "}\0";
-
-u32 vao;
-u32 vbo;
-u32 ibo;
-u32 program;
+struct Shader shader;
+struct Texture texture;
+// TEST
 
 void init() {
   state.window = &window;
@@ -32,10 +25,11 @@ void init() {
   // Quad Setup
 
   f32 vertices[] = {
-      0.5f,  0.5f,  0.0f, // top right
-      0.5f,  -0.5f, 0.0f, // bottom right
-      -0.5f, -0.5f, 0.0f, // bottom left
-      -0.5f, 0.5f,  0.0f  // top left
+      // positions        // colors         // UVs
+      0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
+      0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
+      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
+      -0.5f, 0.5f,  0.0f, 0.5f, 0.5f, 1.0f, 0.0f, 1.0f  // top left
   };
 
   u32 indices[] = {
@@ -44,38 +38,26 @@ void init() {
       1, 2, 3  // second triangle
   };
 
-  glGenVertexArrays(1, &vao);
+  texture = texture_loadFromPath("res/wall.jpg");
+  texture_bind(&texture);
 
-  glGenBuffers(1, &vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+  vao = vao_create();
+  vao_bind(&vao);
 
-  glGenBuffers(1, &ibo);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
-               GL_STATIC_DRAW);
+  vbo = vbo_create(GL_ARRAY_BUFFER, false);
+  vbo_bind(&vbo);
+  vbo_data(&vbo, sizeof(vertices), vertices);
 
-  u32 vertexShader;
-  vertexShader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-  glCompileShader(vertexShader);
+  ibo = vbo_create(GL_ELEMENT_ARRAY_BUFFER, false);
+  vbo_bind(&ibo);
+  vbo_data(&ibo, sizeof(indices), indices);
 
-  u32 fragShader;
-  fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragShader, 1, &fragmentShaderSource, NULL);
-  glCompileShader(fragShader);
+  vao_attr(vao, &vbo, 0, 3, GL_FLOAT, 8 * sizeof(f32), 0);
+  vao_attr(vao, &vbo, 1, 3, GL_FLOAT, 8 * sizeof(f32), 3 * sizeof(f32));
+  vao_attr(vao, &vbo, 2, 2, GL_FLOAT, 8 * sizeof(f32), 6 * sizeof(f32));
 
-  program = glCreateProgram();
-  glAttachShader(program, vertexShader);
-  glAttachShader(program, fragShader);
-  glLinkProgram(program);
-  glUseProgram(program);
-
-  glDeleteShader(vertexShader);
-  glDeleteShader(fragShader);
-
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
-  glEnableVertexAttribArray(0);
+  shader = shader_create("res/simple.vert.glsl", "res/simple.frag.glsl");
+  shader_bind(&shader);
 }
 
 void update() {}

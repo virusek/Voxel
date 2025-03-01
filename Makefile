@@ -9,10 +9,10 @@ CFLAGS := -I/usr/x86_64-w64-mingw32/include -MMD -MP -Wall
 CFLAGS += -Wno-pointer-arith -Wno-newline-eof -Wno-unused-parameter -Wno-gnu-statement-expression
 CFLAGS += -Wno-gnu-compound-literal-initializer -Wno-gnu-zero-variadic-macro-arguments
 
-CFLAGS += -Ilib/cglm/include -Ilib/glad/include -Ilib/glfw/include
+CFLAGS += -Ilib/cglm/include -Ilib/glad/include -Ilib/glfw/include -Ilib/stb
 
 LDFLAGS := lib/cglm/libcglm.a lib/glad/src/glad.o lib/glfw/src/libglfw3.a -lm
-LDFLAGS += -L/usr/x86_64-w64-mingw32/lib -lgdi32 -luser32
+LDFLAGS += -L/usr/x86_64-w64-mingw32/lib -lgdi32 -luser32 -lwinpthread
 
 SRC  = $(wildcard $(SRC_DIR)/**/*.c) $(wildcard $(SRC_DIR)/*.c) $(wildcard $(SRC_DIR)/**/**/*.c) $(wildcard $(SRC_DIR)/**/**/**/*.c)
 OBJ  = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
@@ -37,15 +37,16 @@ libs:
 dirs:
 	mkdir -p ./$(BIN)
 	mkdir -p ./$(OBJ_DIR)
+	mkdir -p ./$(OBJ_DIR)/gfx
 
 run: all
 	$(TARGET)
 
 game: $(OBJ)
-	$(CC) -o $(TARGET) $^ $(LDFLAGS)
+	$(CC) --static -o $(TARGET) $^ $(LDFLAGS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) -o $@ -c $< $(CFLAGS)
+	$(CC) --static -static-libgcc -o $@ -c $< $(CFLAGS)
 
 clean:
 	rm -rf $(BIN) $(OBJ)
