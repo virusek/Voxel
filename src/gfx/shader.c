@@ -1,4 +1,5 @@
 #include "shader.h"
+#include "cglm/types-struct.h"
 
 #include <glad/glad.h>
 #include <stdio.h>
@@ -98,4 +99,9 @@ i32 _getUniformLocation(struct Shader *self, const char *name) {
 
 void shader_setFloat(struct Shader *self, const char *name, float value) {
   glUniform1f(_getUniformLocation(self, name), value);
+}
+
+void shader_setMatrix4x4(struct Shader *self, const char *name, mat4s value) {
+  glUniformMatrix4fv(_getUniformLocation(self, name), 1, GL_FALSE,
+                     (const GLfloat *)&value.raw);
 }

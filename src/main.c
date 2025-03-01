@@ -1,4 +1,4 @@
-#include "glad/glad.h"
+#include "cglm/util.h"
 #include "util/util.h"
 
 #include "gfx/shader.h"
@@ -60,7 +60,15 @@ void init() {
   shader_bind(&shader);
 }
 
-void update() {}
+void update() {
+  mat4s model = GLMS_MAT4_IDENTITY;
+
+  model = glms_scale(model, (vec3s){{0.5, 0.5, 0.5}});
+  model = glms_rotate_z(model, (float)glfwGetTime());
+  /*model = glms_rotate_z(model, glm_rad(45.0));*/
+
+  shader_setMatrix4x4(&shader, "model", model);
+}
 
 void render() {
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);

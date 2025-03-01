@@ -9,7 +9,7 @@ CFLAGS := -I/usr/x86_64-w64-mingw32/include -MMD -MP -Wall
 CFLAGS += -Wno-pointer-arith -Wno-newline-eof -Wno-unused-parameter -Wno-gnu-statement-expression
 CFLAGS += -Wno-gnu-compound-literal-initializer -Wno-gnu-zero-variadic-macro-arguments
 
-CFLAGS += -Ilib/cglm/include -Ilib/glad/include -Ilib/glfw/include -Ilib/stb
+CFLAGS += -Ilib/cglm/include -Ilib/glad/include -Ilib/glfw/include -Ilib/stb -Ilib/cglm/include
 
 LDFLAGS := lib/cglm/libcglm.a lib/glad/src/glad.o lib/glfw/src/libglfw3.a -lm
 LDFLAGS += -L/usr/x86_64-w64-mingw32/lib -lgdi32 -luser32 -lwinpthread

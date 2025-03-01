@@ -13,5 +13,6 @@ void shader_bind(struct Shader *self);
 
 // Uniform functions
 void shader_setFloat(struct Shader *self, const char *name, float value);
+void shader_setMatrix4x4(struct Shader *self, const char *name, mat4s value);
 
 #endif // !SHADER_H
